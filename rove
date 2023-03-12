@@ -18,6 +18,10 @@ def red(v)
   "\e[1;31m%s\e[m" % v
 end
 
+def green(v)
+  "\e[32m%s\e[m" % v
+end
+
 $max_length = $tests.map(&:length).max
 
 $fmts = { true => '%s ok', false => red('%s fail') }
@@ -36,9 +40,13 @@ until $jobs.empty?
   run(next_test) if next_test
 end
 
-puts "\n# Failed tests:" unless $failed.empty?
-$failed.each do |test|
-  puts red(test)
+if $failed.empty?
+  puts green('All tests successful.')
+else
+  puts "\n# Failed tests:"
+  $failed.each do |test|
+    puts red(test)
+  end
 end
 
 exit $failed.empty?
