@@ -14,7 +14,13 @@ def run(test)
   $jobs[pid] = test
 end
 
+def red(v)
+  "\e[1;31m%s\e[m" % v
+end
+
 $max_length = $tests.map(&:length).max
+
+$fmts = { true => '%s ok', false => red('%s fail') }
 
 $tests.pop(JOBS).each { |e| run(e) }
 
@@ -22,7 +28,7 @@ until $jobs.empty?
   pid, status = Process.wait2()
   test = $jobs[pid]
   dots = ' ' + '.' * ($max_length + 2 - test.length)
-  puts '%s %s' % [test + dots, status.success? ? 'ok' : 'fail']
+  puts $fmts[status.success?] % [test + dots]
   $failed << test unless status.success?
   $jobs.delete(pid)
 
@@ -32,7 +38,7 @@ end
 
 puts "\n# Failed tests:" unless $failed.empty?
 $failed.each do |test|
-  puts test
+  puts red(test)
 end
 
 exit $failed.empty?
