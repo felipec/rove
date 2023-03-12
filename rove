@@ -14,12 +14,15 @@ def run(test)
   $jobs[pid] = test
 end
 
+$max_length = $tests.map(&:length).max
+
 $tests.pop(JOBS).each { |e| run(e) }
 
 until $jobs.empty?
   pid, status = Process.wait2()
   test = $jobs[pid]
-  puts '%s %s' % [test, status.success? ? 'ok' : 'fail']
+  dots = ' ' + '.' * ($max_length + 2 - test.length)
+  puts '%s %s' % [test + dots, status.success? ? 'ok' : 'fail']
   $failed << test unless status.success?
   $jobs.delete(pid)
 
