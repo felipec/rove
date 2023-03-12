@@ -5,7 +5,7 @@ require 'etc'
 JOBS = Etc.nprocessors
 
 $tests = ARGV
-$success = true
+$failed = []
 $jobs = {}
 
 def run(test)
@@ -20,11 +20,16 @@ until $jobs.empty?
   pid, status = Process.wait2()
   test = $jobs[pid]
   puts '%s %s' % [test, status.success? ? 'ok' : 'fail']
-  $success &= status.success?
+  $failed << test unless status.success?
   $jobs.delete(pid)
 
   next_test = $tests.pop
   run(next_test) if next_test
 end
 
-exit $success
+puts "\n# Failed tests:" unless $failed.empty?
+$failed.each do |test|
+  puts test
+end
+
+exit $failed.empty?
