@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+$tests = ARGV
+$success = true
+
+$tests.each do |test|
+  print test
+  Process.spawn(File.absolute_path(test), out: '/dev/null')
+  Process.wait
+  puts ' %s' % [$?.success? ? 'ok' : 'fail']
+  $success &= $?.success?
+end
+
+exit $success
