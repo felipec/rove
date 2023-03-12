@@ -1,14 +1,30 @@
 #!/usr/bin/env ruby
 
+require 'etc'
+
+JOBS = Etc.nprocessors
+
 $tests = ARGV
 $success = true
+$jobs = {}
 
-$tests.each do |test|
-  print test
-  Process.spawn(File.absolute_path(test), out: '/dev/null')
-  Process.wait
-  puts ' %s' % [$?.success? ? 'ok' : 'fail']
-  $success &= $?.success?
+def run(test)
+  path = File.absolute_path(test)
+  pid = Process.spawn(path, out: '/dev/null')
+  $jobs[pid] = test
+end
+
+$tests.pop(JOBS).each { |e| run(e) }
+
+until $jobs.empty?
+  pid, status = Process.wait2()
+  test = $jobs[pid]
+  puts '%s %s' % [test, status.success? ? 'ok' : 'fail']
+  $success &= status.success?
+  $jobs.delete(pid)
+
+  next_test = $tests.pop
+  run(next_test) if next_test
 end
 
 exit $success
