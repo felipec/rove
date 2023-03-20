@@ -9,6 +9,7 @@ $failed = []
 $jobs = {}
 
 def run(test)
+  return unless test
   path = File.absolute_path(test)
   pid = Process.spawn(path, out: '/dev/null')
   $jobs[pid] = test
@@ -36,8 +37,7 @@ until $jobs.empty?
   $failed << test unless status.success?
   $jobs.delete(pid)
 
-  next_test = $tests.pop
-  run(next_test) if next_test
+  run($tests.pop)
 end
 
 if $failed.empty?
